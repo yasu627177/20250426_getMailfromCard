@@ -1,0 +1,6 @@
+# Gemini API Key（必須）
+GEMINI_API_KEY=
+
+# Gemini モデル名（必須）
+# 例: gemini-1.5-pro
+GEMINI_MODEL=
