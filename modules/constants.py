@@ -9,57 +9,79 @@ import re
 # ロギング設定
 logger = logging.getLogger(__name__)
 
+# 環境変数の設定
+SAVE_IMAGES = os.getenv('SAVE_IMAGES', 'false').lower() == 'true'
+
 # 共通定数の定義
 
-# 抽出するデータ列（日本語キー）
+# データ項目の定義
 COLUMNS = [
-    "名前", "会社名", "職業", "住所", "郵便", 
-    "電話番号", "メールアドレス", "メールアドレス(予備)",
-    "HP URL", "sasaeai URL", "その他"
+    "名前",
+    "会社名",
+    "職業",
+    "メールアドレス",
+    "電話番号",
+    "郵便番号",
+    "住所",
+    "HP URL",
+    "sasaeai URL",
+    "その他"
 ]
 
-# 必須のキー（すべての結果に必ず含める必要があるキー）
+# 必須項目の定義
 REQUIRED_KEYS = [
-    "名前", "会社名", "職業", "住所", "郵便", 
-    "電話番号", "メールアドレス", "メールアドレス(予備)",
-    "HP URL", "sasaeai URL", "その他"
+    "名前",
+    "会社名",
+    "職業",
+    "メールアドレス",
+    "電話番号",
+    "郵便番号",
+    "住所",
+    "HP URL",
+    "sasaeai URL",
+    "その他"
 ]
 
-# 出力用キー（英語）
+# 出力用のキー順序
 OUTPUT_KEYS = [
-    "name", "company", "title", "address", "postal_code", 
-    "phone", "email", "email_secondary",
-    "website", "sasaeai_url", "other"
+    "名前",
+    "会社名",
+    "職業",
+    "メールアドレス",
+    "電話番号",
+    "郵便番号",
+    "住所",
+    "HP URL",
+    "sasaeai URL",
+    "その他"
 ]
 
-# 日本語キーと英語キーのマッピング
+# キーマッピング（日本語→英語）
 KEY_MAPPING = {
     "名前": "name",
     "会社名": "company",
-    "職業": "title",
-    "住所": "address",
-    "郵便": "postal_code",
-    "電話番号": "phone",
+    "職業": "occupation",
     "メールアドレス": "email",
-    "メールアドレス(予備)": "email_secondary",
+    "電話番号": "phone",
+    "郵便番号": "postal_code",
+    "住所": "address",
     "HP URL": "website",
-    "sasaeai URL": "sasaeai_url",  # sasaeai URLは https://sasaeai.link-platform.jp/ を含むURL
+    "sasaeai URL": "sasaeai_url",
     "その他": "other"
 }
 
-# デモデータ（APIが利用できない場合のフォールバック）
+# デモデータ
 DEMO_DATA = {
-    "名前": "山田 太郎",
-    "会社名": "サンプル株式会社",
+    "名前": "山田太郎",
+    "会社名": "株式会社サンプル",
     "職業": "営業部長",
-    "住所": "東京都千代田区1-1-1",
-    "郵便": "100-0001",
-    "電話番号": "03-1234-5678",
     "メールアドレス": "yamada@example.com",
-    "メールアドレス(予備)": "",
-    "HP URL": "https://example.com",
-    "sasaeai URL": "https://sasaeai.link-platform.jp/sample",
-    "その他": "デモデータです"
+    "電話番号": "03-1234-5678",
+    "郵便番号": "100-0001",
+    "住所": "東京都千代田区丸の内1-1-1",
+    "HP URL": "https://www.example.com",
+    "sasaeai URL": "https://sasaeai.link-platform.jp/123456",
+    "その他": "備考情報等"
 }
 
 # 使用するGeminiモデル
@@ -106,8 +128,10 @@ PROMPT_TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), "prompt_template.
 
 # アップロードされた画像を保存するためのディレクトリ
 UPLOAD_DIR = "uploads"
-os.makedirs(UPLOAD_DIR, exist_ok=True)
+if SAVE_IMAGES:
+    os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 # 処理済み画像を保存するためのディレクトリ（デバッグ用）
 PROCESSED_IMAGES_DIR = "processed_images"
-os.makedirs(PROCESSED_IMAGES_DIR, exist_ok=True) 
+if SAVE_IMAGES:
+    os.makedirs(PROCESSED_IMAGES_DIR, exist_ok=True) 

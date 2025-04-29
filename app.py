@@ -8,7 +8,12 @@ import numpy as np
 import tempfile
 import logging
 from datetime import datetime
-from modules import ocr, parser, exporter, constants
+from modules import ocr, parser, exporter, constants, qr_reader
+from dotenv import load_dotenv
+import shutil
+
+# 環境変数の読み込み
+load_dotenv()
 
 # ロギング設定
 logging.basicConfig(
@@ -17,36 +22,15 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Streamlit UI設定
-st.set_page_config(page_title="名刺OCRアプリ", layout="wide")
+# 環境変数の設定
+SAVE_IMAGES = os.getenv('SAVE_IMAGES', 'false').lower() == 'true'
 
-def save_uploaded_file(uploaded_file):
-    """
-    アップロードされたファイルを一時ファイルとして保存
-    
-    Args:
-        uploaded_file: Streamlitのファイルオブジェクト
-        
-    Returns:
-        str: 保存された一時ファイルのパス
-    """
-    try:
-        # アップロードディレクトリを作成
-        os.makedirs(constants.UPLOAD_DIR, exist_ok=True)
-        
-        # ファイル名を生成（元の名前＋タイムスタンプ）
-        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-        file_name = f"{timestamp}_{uploaded_file.name}"
-        file_path = os.path.join(constants.UPLOAD_DIR, file_name)
-        
-        # ファイルを保存
-        with open(file_path, "wb") as f:
-            f.write(uploaded_file.getbuffer())
-            
-        return file_path
-    except Exception as e:
-        logger.error(f"ファイル保存エラー: {str(e)}")
-        return None
+# Streamlit UI設定
+st.set_page_config(
+    page_title="名刺OCRアプリ",
+    page_icon="📇",
+    layout="wide"
+)
 
 def process_image(image_path):
     """
@@ -56,29 +40,59 @@ def process_image(image_path):
         image_path: 処理する画像のパス
         
     Returns:
-        tuple: (成功したかどうか, エラーメッセージ, 抽出テキスト, 構造化データ)
+        tuple: (成功したかどうか, エラーメッセージ, 抽出テキスト, QRコードテキスト, 構造化データ)
     """
     try:
+        # 画像を読み込み
+        pil_image = Image.open(image_path)
+        
         # OCR処理
-        ocr_text, processed_images = ocr.extract_text_from_image(image_path)
+        ocr_text, processed_images = ocr.extract_text_from_image(image_path, save_processed_images=SAVE_IMAGES)
         
         # OCRエラーチェック
         if "エラー" in ocr_text or "失敗" in ocr_text:
-            return False, ocr_text, None, None
+            return False, ocr_text, None, None, None
+        
+        # QRコード読み取り
+        qr_text = qr_reader.read_qr_from_image(pil_image)
+        if qr_text:
+            logger.info(f"QRコード検出: {qr_text[:50]}...")
+            
+            # sasaeai URLの特別処理
+            if qr_reader.is_sasaeai_url(qr_text):
+                logger.info("sasaeai URLを検出しました")
         
         # Gemini APIでテキスト構造化
         try:
-            structured_data = parser.parse_text(ocr_text)
-            return True, None, ocr_text, structured_data
+            # QRコード情報も含めて構造化
+            structured_data = parser.parse_text(ocr_text, qr_text)
+            
+            # 予備メールアドレスと予備電話番号を「その他」に移動
+            if structured_data:
+                other_info = []
+                if structured_data.get('メールアドレス（予備）'):
+                    other_info.append(f"予備メールアドレス: {structured_data['メールアドレス（予備）']}")
+                    del structured_data['メールアドレス（予備）']
+                if structured_data.get('電話番号（予備）'):
+                    other_info.append(f"予備電話番号: {structured_data['電話番号（予備）']}")
+                    del structured_data['電話番号（予備）']
+                
+                if other_info:
+                    if structured_data.get('その他'):
+                        structured_data['その他'] += "\n" + "\n".join(other_info)
+                    else:
+                        structured_data['その他'] = "\n".join(other_info)
+            
+            return True, None, ocr_text, qr_text, structured_data
         except Exception as api_err:
             error_msg = str(api_err)
             # APIクォータエラーの特別処理
             if "429" in error_msg:
-                return False, "Gemini APIのクォータ制限に達しました。しばらく待ってから再試行してください。", ocr_text, None
+                return False, "Gemini APIのクォータ制限に達しました。しばらく待ってから再試行してください。", ocr_text, qr_text, None
             else:
-                return False, f"Gemini APIエラー: {error_msg}", ocr_text, None
+                return False, f"Gemini APIエラー: {error_msg}", ocr_text, qr_text, None
     except Exception as e:
-        return False, f"処理中にエラーが発生しました: {str(e)}", None, None
+        return False, f"処理中にエラーが発生しました: {str(e)}", None, None, None
 
 def main():
     st.title("名刺OCRアプリ")
@@ -93,152 +107,75 @@ def main():
     
     with col1:
         st.write("### 名刺画像をアップロード")
+        uploaded_file = st.file_uploader("名刺画像を選択", type=["png", "jpg", "jpeg"])
         
-        # タブで「アップロード」と「サンプル」を切り替え
-        tab1, tab2 = st.tabs(["📷 アップロード", "📊 サンプル"])
-        
-        with tab1:
-            uploaded_file = st.file_uploader("名刺画像を選択", type=["png", "jpg", "jpeg"])
+        if uploaded_file:
+            # 画像表示
+            image = Image.open(uploaded_file)
+            st.image(image, caption="アップロードされた名刺", use_column_width=True)
             
-            if uploaded_file:
-                # 画像表示
-                image = Image.open(uploaded_file)
-                st.image(image, caption="アップロードされた名刺", use_column_width=True)
-                
-                # OCR処理ボタン
-                if st.button("🔍 データ抽出", key="extract_uploaded"):
-                    with st.spinner("画像を処理中..."):
-                        # 画像を一時ファイルとして保存
-                        temp_image_path = save_uploaded_file(uploaded_file)
-                        if not temp_image_path:
-                            st.error("画像の保存に失敗しました。再度アップロードしてください。")
-                        else:
-                            # 画像処理
-                            success, error_msg, ocr_text, structured_data = process_image(temp_image_path)
-                            
-                            if success:
-                                st.text_area("抽出テキスト", ocr_text, height=150)
-                                
-                                # DataFrameに追加
-                                new_df = pd.DataFrame([structured_data])
-                                st.session_state.df = pd.concat([st.session_state.df, new_df], ignore_index=True)
-                                
-                                st.success("データ抽出に成功しました！")
-                            else:
-                                st.error(error_msg)
-                                if ocr_text:
-                                    st.text_area("抽出テキスト", ocr_text, height=150)
-                                    st.info("OCRでテキストは抽出できましたが、Gemini APIでの解析に失敗しました。APIキーや接続を確認してください。")
-        
-        with tab2:
-            st.write("サンプル名刺を選択してテスト")
-            
-            # サンプルディレクトリの確認とサンプル表示
-            samples_dir = "samples"
-            if os.path.exists(samples_dir) and os.listdir(samples_dir):
-                sample_files = [f for f in os.listdir(samples_dir) if f.endswith(('.png', '.jpg', '.jpeg'))]
-                
-                if sample_files:
-                    sample_choice = st.selectbox(
-                        "サンプル名刺を選択",
-                        options=sample_files,
-                        format_func=lambda x: x.replace('_', ' ').replace('.png', '').replace('.jpg', '')
-                    )
+            # OCR処理ボタン
+            if st.button("🔍 データ抽出", key="extract_uploaded"):
+                with st.spinner("画像を処理中..."):
+                    # 一時ファイルとして保存
+                    with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(uploaded_file.name)[1]) as tmp_file:
+                        tmp_file.write(uploaded_file.getvalue())
+                        temp_path = tmp_file.name
                     
-                    sample_path = os.path.join(samples_dir, sample_choice)
-                    
-                    # サンプル画像表示
-                    sample_image = Image.open(sample_path)
-                    st.image(sample_image, caption=f"サンプル: {sample_choice}", use_column_width=True)
-                    
-                    # 処理ボタン
-                    if st.button("🔍 サンプルを処理", key="process_sample"):
-                        with st.spinner("サンプル画像を処理中..."):
-                            # 画像処理
-                            success, error_msg, ocr_text, structured_data = process_image(sample_path)
-                            
-                            if success:
-                                st.text_area("抽出テキスト", ocr_text, height=150)
-                                
-                                # DataFrameに追加
-                                new_df = pd.DataFrame([structured_data])
-                                st.session_state.df = pd.concat([st.session_state.df, new_df], ignore_index=True)
-                                
-                                st.success("サンプルデータの抽出に成功しました！")
-                            else:
-                                st.error(error_msg)
-                                if ocr_text:
-                                    st.text_area("抽出テキスト", ocr_text, height=150)
-                else:
-                    st.warning("サンプル名刺が見つかりません。サンプル生成スクリプトを実行してください。")
-                    if st.button("サンプル名刺を生成"):
-                        try:
-                            import subprocess
-                            result = subprocess.run(["python", "generate_sample_card.py"], capture_output=True, text=True)
-                            if result.returncode == 0:
-                                st.success("サンプル名刺を生成しました！ページを更新してください。")
-                            else:
-                                st.error(f"サンプル生成エラー: {result.stderr}")
-                        except Exception as e:
-                            st.error(f"サンプル生成中にエラーが発生しました: {str(e)}")
-            else:
-                st.warning("サンプルディレクトリが見つかりません。サンプル生成スクリプトを実行してください。")
-                if st.button("サンプル名刺を生成"):
                     try:
-                        import subprocess
-                        result = subprocess.run(["python", "generate_sample_card.py"], capture_output=True, text=True)
-                        if result.returncode == 0:
-                            st.success("サンプル名刺を生成しました！ページを更新してください。")
+                        # 画像処理
+                        success, error_msg, ocr_text, qr_text, structured_data = process_image(temp_path)
+                        
+                        if success:
+                            # テキスト情報の表示
+                            st.text_area("OCRで抽出したテキスト", ocr_text, height=120)
+                            
+                            # QRコード情報があれば表示
+                            if qr_text:
+                                st.text_area("QRコードから抽出したリンク", qr_text, height=60)
+                            
+                            # DataFrameに追加
+                            new_df = pd.DataFrame([structured_data])
+                            st.session_state.df = pd.concat([st.session_state.df, new_df], ignore_index=True)
+                            
+                            st.success("データ抽出に成功しました！")
                         else:
-                            st.error(f"サンプル生成エラー: {result.stderr}")
-                    except Exception as e:
-                        st.error(f"サンプル生成中にエラーが発生しました: {str(e)}")
+                            st.error(error_msg)
+                            if ocr_text:
+                                st.text_area("OCRで抽出したテキスト", ocr_text, height=120)
+                                if qr_text:
+                                    st.text_area("QRコードから抽出したリンク", qr_text, height=60)
+                                st.info("テキストは抽出できましたが、Gemini APIでの解析に失敗しました。APIキーや接続を確認してください。")
+                    finally:
+                        # 一時ファイルの削除
+                        os.unlink(temp_path)
     
     # 右カラム：データ表示と保存機能
     with col2:
         st.write("### 抽出された名刺データ")
         if not st.session_state.df.empty:
+            # データ表示
             st.dataframe(st.session_state.df, use_container_width=True)
             
-            # 保存ボタン
-            st.write("### データを保存")
-            
+            # CSV保存ボタン
+            csv = exporter.to_csv(st.session_state.df)
             st.download_button(
-                "💾 CSVとして保存",
-                exporter.to_csv(st.session_state.df),
-                file_name="meishi_data.csv",
-                mime="text/csv"
+                label="📥 CSVダウンロード",
+                data=csv,
+                file_name=f"meishi_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                mime="text/csv",
             )
             
-            # データのクリア
-            if st.button("🗑️ データをクリア"):
+            # データクリアボタン
+            if st.button("🗑 データクリア"):
                 st.session_state.df = pd.DataFrame(columns=constants.COLUMNS)
                 st.experimental_rerun()
         else:
-            st.info("名刺をアップロードして「データ抽出」ボタンを押すと、ここに結果が表示されます。")
-    
-    # アプリの説明
-    with st.expander("📖 このアプリについて"):
-        st.markdown("""
-        ### 名刺OCRアプリ
-        
-        このアプリは、名刺画像から情報を自動的に抽出し、整理・保存する機能を提供します。
-        
-        **機能：**
-        - 名刺画像のOCR処理による文字認識
-        - Google Gemini APIを使用した情報の構造化
-        - CSV形式でのデータ保存
-        
-        **使い方：**
-        1. 左側の「アップロード」タブで名刺画像をアップロード、または「サンプル」タブでサンプル名刺を選択
-        2. 「データ抽出」ボタンをクリックして処理を開始
-        3. 抽出されたデータは右側の表に表示されます
-        4. 必要に応じてCSVに保存
-        
-        **注意事項：**
-        - APIの利用制限により、短時間に多数のリクエストを行うとエラーが発生することがあります
-        - 名刺の品質や記載方法によっては、認識精度が低下する場合があります
-        """)
+            st.info("名刺データがまだありません。左側から名刺画像をアップロードしてデータ抽出を行ってください。")
+
+    # フッター
+    st.markdown("---")
+    st.markdown("© 2024 名刺OCRアプリ")
 
 if __name__ == "__main__":
     main() 

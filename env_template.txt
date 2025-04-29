@@ -4,3 +4,8 @@ GEMINI_API_KEY=
 # Gemini モデル名（必須）
 # 例: gemini-1.5-pro
 GEMINI_MODEL=
+
+# 画像保存設定（オプション）
+# true: アップロード画像と処理済み画像を保存する
+# false: 画像を保存しない（本番環境推奨）
+SAVE_IMAGES=false

@@ -7,6 +7,7 @@ import google.generativeai as genai
 from .prompts import get_gemini_prompt
 from .constants import COLUMNS, REQUIRED_KEYS, DEMO_DATA, KEY_MAPPING, GEMINI_MODEL
 from .demo_data import get_demo_data
+from typing import Optional, Dict, Any
 
 # ロギング設定
 logging.basicConfig(
@@ -75,24 +76,84 @@ def configure_genai():
         logger.error(error_msg)
         raise RuntimeError(error_msg)
 
-def parse_text(ocr_text):
+def combine_texts(ocr_text: str, qr_text: Optional[str]) -> str:
+    """
+    OCRで取得したテキストと、QRコードから取得したテキストを合成する。
+    
+    Args:
+        ocr_text (str): OCRで抽出したテキスト
+        qr_text (Optional[str]): QRコードから抽出したテキスト（Noneの場合もある）
+        
+    Returns:
+        str: 合成したテキスト
+    """
+    combined_text = ocr_text.strip()
+    
+    if qr_text:
+        # QRコード情報をOCRテキストの末尾に追加
+        combined_text += f"\n\nQRコード情報: {qr_text.strip()}"
+        logger.info("QRコード情報をテキストに追加しました")
+    else:
+        logger.info("QRコード情報なし - テキスト合成はOCRのみ")
+    
+    return combined_text
+
+def normalize_text(text: str) -> str:
+    """
+    テキストを正規化する（丸数字変換、住所標準化など）
+    
+    Args:
+        text (str): 正規化するテキスト
+        
+    Returns:
+        str: 正規化されたテキスト
+    """
+    normalized = text
+    
+    # 丸数字を通常の数字に変換
+    circled_numbers = {
+        '①': '1', '②': '2', '③': '3', '④': '4', '⑤': '5',
+        '⑥': '6', '⑦': '7', '⑧': '8', '⑨': '9', '⑩': '10',
+        '⑪': '11', '⑫': '12'
+    }
+    
+    for circled, normal in circled_numbers.items():
+        normalized = normalized.replace(circled, normal)
+    
+    # 郵便番号の正規化 (123-4567 形式に)
+    postal_pattern = r'(\d{3})[-\s]*(\d{4})'
+    normalized = re.sub(postal_pattern, r'\1-\2', normalized)
+    
+    return normalized
+
+def parse_text(ocr_text: str, qr_text: Optional[str] = None) -> Dict[str, str]:
     """
     OCRで抽出したテキストをパースしてデータを返す
     
     Args:
         ocr_text (str): OCRで抽出したテキスト
+        qr_text (Optional[str]): QRコードから抽出したテキスト（デフォルトはNone）
         
     Returns:
         dict: 抽出したデータ
     """
     logger.info("テキストの解析を開始")
     
+    # テキスト合成（QRコード情報があれば）
+    if qr_text:
+        combined_text = combine_texts(ocr_text, qr_text)
+    else:
+        combined_text = ocr_text
+    
+    # テキスト正規化
+    normalized_text = normalize_text(combined_text)
+    
     # APIの設定
     configure_genai()
     
     try:
         # プロンプトの作成
-        prompt = get_gemini_prompt(ocr_text)
+        prompt = get_gemini_prompt(normalized_text)
         logger.debug(f"生成したプロンプト: {prompt[:100]}...")
         
         # モデルの設定 - JSON modeを有効化
@@ -220,8 +281,8 @@ def parse_text(ocr_text):
             # 日本語キーでのレスポンス
             result = parsed_data
         
-        # 旧フィールド（フィールド1～フィールド5、メモ）をその他にまとめる
-        old_fields = ["フィールド1", "フィールド2", "フィールド3", "フィールド4", "フィールド5", "メモ"]
+        # 旧フィールド（フィールド1～フィールド5、メモ、フリガナ、会社名）をその他にまとめる
+        old_fields = ["メモ", "フリガナ","電話番号(予備)","メールアドレス(予備)","FAX"]
         other_content = []
         
         for field in old_fields:

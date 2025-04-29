@@ -10,7 +10,7 @@ import cv2
 import numpy as np
 import pytesseract
 from datetime import datetime
-from .constants import TESSERACT_CMD_PATH, PROCESSED_IMAGES_DIR
+from .constants import TESSERACT_CMD_PATH, PROCESSED_IMAGES_DIR, SAVE_IMAGES
 
 # Tesseractコマンドのパスを設定
 pytesseract.pytesseract.tesseract_cmd = TESSERACT_CMD_PATH
@@ -62,12 +62,13 @@ def preprocess_image(image):
         logger.error(f"画像の前処理中にエラーが発生しました: {str(e)}")
         return {"original": image}
 
-def extract_text_from_image(image_path):
+def extract_text_from_image(image_path, save_processed_images=False):
     """
     画像から文字を抽出する
     
     Args:
         image_path (str): 画像ファイルのパス
+        save_processed_images (bool): 処理済み画像を保存するかどうか
         
     Returns:
         tuple: (抽出されたテキスト, 処理済み画像の辞書)
@@ -100,8 +101,9 @@ def extract_text_from_image(image_path):
         all_text = []
         
         # 処理済み画像を保存（デバッグ用）
-        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-        save_processed_images(processed_images, os.path.basename(image_path), timestamp)
+        if SAVE_IMAGES and save_processed_images:
+            timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+            save_processed_images_to_disk(processed_images, os.path.basename(image_path), timestamp)
         
         # 各前処理画像に対してOCR実行
         for img_name, proc_img in processed_images.items():
@@ -130,7 +132,7 @@ def extract_text_from_image(image_path):
         logger.error(f"OCR処理中にエラーが発生しました: {str(e)}")
         return f"エラー: {str(e)}", {}
 
-def save_processed_images(processed_images, original_filename, timestamp):
+def save_processed_images_to_disk(processed_images, original_filename, timestamp):
     """
     処理済み画像を保存する（デバッグ用）
     

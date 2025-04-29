@@ -87,7 +87,10 @@ ENV/
 env.bak/
 venv.bak/
 test_env.py
-
+/tests
+/temp
+/sample_images
+make_sample_business_card_with_qr.py
 # Spyder project settings
 .spyderproject
 .spyproject
@@ -117,11 +120,13 @@ processed_images/
 *.xlsx
 *.csv
 .specstory/
+.streamlit/
 
 # Windows
 Thumbs.db
 ehthumbs.db
 Desktop.ini
+pyzbar-0.1.9-py2.py3-none-win_amd64.whl
 
 # macOS
 .DS_Store
