@@ -1,0 +1,9 @@
+[build]
+pythonVersion = "3.9"
+
+[environment]
+TESSERACT_CMD_PATH = "/usr/bin/tesseract"
+
+[deploy]
+memory = 1024
+disk = 1024 

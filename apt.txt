@@ -2,4 +2,5 @@ libgl1
 libglib2.0-0
 tesseract-ocr
 tesseract-ocr-jpn
-tesseract-ocr-jpn-vert 
+tesseract-ocr-jpn-vert
+libtesseract-dev 
