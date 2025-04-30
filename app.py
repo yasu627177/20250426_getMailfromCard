@@ -131,7 +131,7 @@ def main():
                             
                             # QRコード情報があれば表示
                             if qr_text:
-                                st.text_area("QRコードから抽出したリンク", qr_text or "", height=60)
+                                st.text_area("QRコードから抽出したリンク", qr_text or "", height=80)
                             
                             # DataFrameに追加
                             new_df = pd.DataFrame([structured_data])
@@ -143,7 +143,7 @@ def main():
                             if ocr_text:
                                 st.text_area("OCRで抽出したテキスト", ocr_text, height=120)
                                 if qr_text:
-                                    st.text_area("QRコードから抽出したリンク", qr_text or "", height=60)
+                                    st.text_area("QRコードから抽出したリンク", qr_text or "", height=80)
                                 st.info("テキストは抽出できましたが、Gemini APIでの解析に失敗しました。APIキーや接続を確認してください。")
                     finally:
                         # 一時ファイルの削除
