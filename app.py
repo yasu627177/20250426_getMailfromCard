@@ -3,8 +3,6 @@ import pandas as pd
 from PIL import Image
 import io
 import os
-import cv2
-import numpy as np
 import tempfile
 import logging
 from datetime import datetime
