@@ -9,6 +9,7 @@ from datetime import datetime
 from modules import ocr, parser, exporter, constants, qr_reader
 from dotenv import load_dotenv
 import shutil
+import subprocess
 
 # 環境変数の読み込み
 load_dotenv()
@@ -174,6 +175,20 @@ def main():
     # フッター
     st.markdown("---")
     st.markdown("© 2024 名刺OCRアプリ")
+
+    st.header("Tesseract インストール確認")
+
+    try:
+        # tesseractのバージョン確認コマンドを実行
+        result = subprocess.run(["tesseract", "--version"], capture_output=True, text=True)
+        st.text("tesseract --version の出力:")
+        st.code(result.stdout)
+        if result.returncode != 0:
+            st.error("Tesseractが正しくインストールされていません。")
+        else:
+            st.success("Tesseractはインストールされています。")
+    except Exception as e:
+        st.error(f"コマンド実行時にエラー: {e}")
 
 if __name__ == "__main__":
     main() 
