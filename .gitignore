@@ -120,7 +120,6 @@ processed_images/
 *.xlsx
 *.csv
 .specstory/
-.streamlit/
 
 # Windows
 Thumbs.db
@@ -138,4 +137,7 @@ pyzbar-0.1.9-py2.py3-none-win_amd64.whl
 *~
 *.bak
 *.swp
-*.tmp 
+*.tmp
+
+# Streamlit secrets
+.streamlit/secrets.toml 
