@@ -110,7 +110,7 @@ def main():
         if uploaded_file:
             # 画像表示
             image = Image.open(uploaded_file)
-            st.image(image, caption="アップロードされた名刺", use_column_width=True)
+            st.image(image, caption="アップロードされた名刺", use_container_width=True)
             
             # OCR処理ボタン
             if st.button("🔍 データ抽出", key="extract_uploaded"):
