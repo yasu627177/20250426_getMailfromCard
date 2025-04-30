@@ -131,7 +131,7 @@ def main():
                             
                             # QRコード情報があれば表示
                             if qr_text:
-                                st.text_area("QRコードから抽出したリンク", qr_text, height=60)
+                                st.text_area("QRコードから抽出したリンク", qr_text or "", height=60)
                             
                             # DataFrameに追加
                             new_df = pd.DataFrame([structured_data])
@@ -143,7 +143,7 @@ def main():
                             if ocr_text:
                                 st.text_area("OCRで抽出したテキスト", ocr_text, height=120)
                                 if qr_text:
-                                    st.text_area("QRコードから抽出したリンク", qr_text, height=60)
+                                    st.text_area("QRコードから抽出したリンク", qr_text or "", height=60)
                                 st.info("テキストは抽出できましたが、Gemini APIでの解析に失敗しました。APIキーや接続を確認してください。")
                     finally:
                         # 一時ファイルの削除
@@ -175,20 +175,6 @@ def main():
     # フッター
     st.markdown("---")
     st.markdown("© 2024 名刺OCRアプリ")
-
-    st.header("Tesseract インストール確認")
-
-    try:
-        # tesseractのバージョン確認コマンドを実行
-        result = subprocess.run(["tesseract", "--version"], capture_output=True, text=True)
-        st.text("tesseract --version の出力:")
-        st.code(result.stdout)
-        if result.returncode != 0:
-            st.error("Tesseractが正しくインストールされていません。")
-        else:
-            st.success("Tesseractはインストールされています。")
-    except Exception as e:
-        st.error(f"コマンド実行時にエラー: {e}")
 
 if __name__ == "__main__":
     main() 
