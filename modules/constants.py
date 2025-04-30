@@ -12,6 +12,9 @@ logger = logging.getLogger(__name__)
 # 環境変数の設定
 SAVE_IMAGES = os.getenv('SAVE_IMAGES', 'false').lower() == 'true'
 
+# Tesseract OCRのパス設定
+TESSERACT_CMD_PATH = os.getenv('TESSERACT_CMD_PATH', '/usr/bin/tesseract')
+
 # 共通定数の定義
 
 # データ項目の定義
@@ -116,9 +119,6 @@ if not gemini_model:
 
 GEMINI_MODEL = gemini_model
 logger.info(f"使用するGeminiモデル: {GEMINI_MODEL}")
-
-# Tesseractコマンドのパス
-TESSERACT_CMD_PATH = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
 # APIリクエストタイムアウト（秒）
 API_TIMEOUT = 30
