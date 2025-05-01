@@ -1,14 +1,14 @@
 [build]
-pythonVersion = "3.11"
+pythonVersion = "3.11"  # Pythonバージョンの指定
 
 [environment]
-TESSERACT_CMD_PATH = "/usr/bin/tesseract"
+TESSERACT_CMD_PATH = "/usr/bin/tesseract"  # Tesseract OCRの実行パス
 
 [deploy]
-memory = 1024
-disk = 1024
-timeout = 300
+memory = 1024  # メモリ割り当て（MB）
+disk = 1024  # ディスク容量（MB）
+timeout = 300  # タイムアウト時間（秒）
 
 [server]
-maxUploadSize = 200
+maxUploadSize = 200  # 最大アップロードサイズ（MB）
 

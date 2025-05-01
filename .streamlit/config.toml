@@ -1,38 +1,40 @@
 [theme]
-primaryColor = "#FF4B4B"
-backgroundColor = "#FFFFFF"
-secondaryBackgroundColor = "#F0F2F6"
-textColor = "#262730"
-font = "sans serif"
+primaryColor = "#FF4B4B"  # プライマリカラー（赤系）
+backgroundColor = "#FFFFFF"  # 背景色（白）
+secondaryBackgroundColor = "#F0F2F6"  # セカンダリ背景色（薄いグレー）
+textColor = "#262730"  # テキストカラー（濃いグレー）
+font = "sans serif"  # フォント指定
 
 [server]
-enableCORS = false
-maxUploadSize = 200
-maxMessageSize = 50
-headless = true
+enableCORS = false  # CORSの無効化
+maxUploadSize = 200  # 最大アップロードサイズ（MB）
+maxMessageSize = 50  # 最大メッセージサイズ（MB）
+headless = true  # ヘッドレスモードの有効化
 
 [logger]
-level = "warning"
-messageFormat = "%(asctime)s - %(levelname)s - %(message)s"
+level = "warning"  # ログレベル設定
+messageFormat = "%(asctime)s - %(levelname)s - %(message)s"  # ログメッセージフォーマット
 
 [cache]
-ttl = 3600
-maxEntries = 100
+ttl = 3600  # キャッシュの有効期限（秒）
+maxEntries = 100  # 最大キャッシュエントリ数
 
 [ui]
-hideSidebarNav = true
-hideShareButton = true
-hideManageAppButton = true
-hideMenuButton = true
-hideFooter = true
-hideTopBar = true
-hideToolbar = true
-hideHeader = true
-hideMainMenu = true
-hideDevMenu = true
-hideDeployButton = true
-hideGitButton = true
-hideStreamlitButton = true
+hideSidebarNav = true  # サイドバーナビゲーションの非表示
+hideShareButton = true  # 共有ボタンの非表示
+hideManageAppButton = true  # アプリ管理ボタンの非表示
+hideMenuButton = true  # メニューボタンの非表示
+hideFooter = true  # フッターの非表示
+hideTopBar = true  # トップバーの非表示
+hideToolbar = true  # ツールバーの非表示
+hideHeader = true  # ヘッダーの非表示
+hideMainMenu = true  # メインメニューの非表示
+hideDevMenu = true  # 開発者メニューの非表示
+hideDeployButton = true  # デプロイボタンの非表示
+hideGitButton = true  # Gitボタンの非表示
+hideStreamlitButton = true  # Streamlitボタンの非表示
+showErrorDetails = false  # UIでのエラー詳細表示を無効化
 
 [client]
-toolbarMode = "minimal"
+toolbarMode = "minimal"   # ツールバーモードの最小化
+showErrorDetails = false  # エラー詳細の表示を無効化
