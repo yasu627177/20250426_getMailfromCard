@@ -12,6 +12,18 @@ timeout = 300
 [server]
 maxUploadSize = 200
 
-[requirements]
-streamlit = ">=1.28.0"
-protobuf = ">=3.20,<6" 
+[ui]
+hideSidebarNav = true
+hideShareButton = true
+hideManageAppButton = true
+hideMenuButton = true
+hideFooter = true
+hideTopBar = true
+hideToolbar = true
+hideHeader = true
+hideMainMenu = true
+hideDevMenu = true
+hideDeployButton = true
+
+[client]
+toolbarMode = "minimal"
