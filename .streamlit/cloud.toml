@@ -6,4 +6,12 @@ TESSERACT_CMD_PATH = "/usr/bin/tesseract"
 
 [deploy]
 memory = 1024
-disk = 1024 
+disk = 1024
+timeout = 300
+
+[server]
+maxUploadSize = 200
+
+[requirements]
+streamlit = ">=1.28.0"
+protobuf = ">=3.20,<6" 

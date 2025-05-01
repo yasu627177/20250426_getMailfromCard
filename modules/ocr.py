@@ -10,10 +10,9 @@ import cv2
 import numpy as np
 import pytesseract
 from datetime import datetime
-from .constants import PROCESSED_IMAGES_DIR, SAVE_IMAGES
+from .constants import PROCESSED_IMAGES_DIR, SAVE_IMAGES, TESSERACT_CMD_PATH
 
 # Tesseractコマンドのパスを環境変数から取得
-TESSERACT_CMD_PATH = os.getenv('TESSERACT_CMD_PATH', '/usr/bin/tesseract')
 pytesseract.pytesseract.tesseract_cmd = TESSERACT_CMD_PATH
 
 # ロガーを設定

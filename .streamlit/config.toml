@@ -7,10 +7,33 @@ font = "sans serif"
 
 [server]
 enableCORS = false
-enableXsrfProtection = false
-
-[browser]
-gatherUsageStats = false
+maxUploadSize = 200
+maxMessageSize = 50
+headless = true
 
 [environment]
-TESSERACT_CMD_PATH = "/usr/bin/tesseract" 
+TESSERACT_CMD_PATH = "/usr/bin/tesseract"
+
+[ui]
+hideSidebarNav = true
+hideShareButton = true
+hideManageAppButton = true
+hideMenuButton = true
+hideFooter = true
+hideTopBar = true
+hideToolbar = true
+hideHeader = true
+hideMainMenu = true
+hideDevMenu = true
+hideDeployButton = true
+
+[client]
+toolbarMode = "minimal"
+
+[logger]
+level = "warning"
+messageFormat = "%(asctime)s - %(levelname)s - %(message)s"
+
+[cache]
+ttl = 3600
+maxEntries = 100

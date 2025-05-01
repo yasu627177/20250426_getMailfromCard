@@ -13,7 +13,16 @@ logger = logging.getLogger(__name__)
 SAVE_IMAGES = os.getenv('SAVE_IMAGES', 'false').lower() == 'true'
 
 # Tesseract OCRのパス設定
-TESSERACT_CMD_PATH = os.getenv('TESSERACT_CMD_PATH', '/usr/bin/tesseract')
+TESSERACT_CMD_PATH = os.getenv('TESSERACT_CMD_PATH')
+if not TESSERACT_CMD_PATH:
+    # Windows環境の場合のデフォルトパス
+    if os.name == 'nt':
+        TESSERACT_CMD_PATH = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+    else:
+        TESSERACT_CMD_PATH = '/usr/bin/tesseract'
+
+logging.basicConfig(level=logging.INFO)
+logging.info(f"TESSERACT_CMD_PATH: {TESSERACT_CMD_PATH}")
 
 # 共通定数の定義
 
