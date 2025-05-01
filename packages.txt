@@ -1,6 +1,16 @@
+# グラフィック関連
 libgl1
 libglib2.0-0
+
+# Tesseract関連
 tesseract-ocr
 tesseract-ocr-jpn
 tesseract-ocr-jpn-vert
-libtesseract-dev 
+tesseract-ocr-eng
+libtesseract-dev
+
+# PDF処理関連
+poppler-utils
+
+# アーカイブ関連
+libarchive13 

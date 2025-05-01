@@ -36,5 +36,5 @@ hideStreamlitButton = true  # Streamlitボタンの非表示
 showErrorDetails = false  # UIでのエラー詳細表示を無効化
 
 [client]
-toolbarMode = "minimal"   # ツールバーモードの最小化
+toolbarMode = "minimal"   # ツールバーの最小表示
 showErrorDetails = false  # エラー詳細の表示を無効化
