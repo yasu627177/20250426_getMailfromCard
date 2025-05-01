@@ -31,6 +31,8 @@ hideHeader = true
 hideMainMenu = true
 hideDevMenu = true
 hideDeployButton = true
+hideGitButton = true
+hideStreamlitButton = true
 
 [client]
 toolbarMode = "minimal"
