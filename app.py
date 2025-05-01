@@ -27,9 +27,26 @@ SAVE_IMAGES = os.getenv('SAVE_IMAGES', 'false').lower() == 'true'
 # Streamlit UI設定
 st.set_page_config(
     page_title="名刺OCRアプリ",
-    page_icon="📇",
-    layout="wide"
+    page_icon="��",
+    layout="wide",
+    initial_sidebar_state="auto",
+    menu_items={
+        "Get Help": None,
+        "Report a bug": None,
+        "About": None
+    }
 )
+
+# カスタムCSSでUI要素を非表示
+hide_streamlit_style = """
+    <style>
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    .stDeployButton {visibility: hidden;}
+    .viewerBadge_link__qRIco {display: none;}
+    </style>
+    """
+st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 def process_image(image_path):
     """
