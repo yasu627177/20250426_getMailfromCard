@@ -18,3 +18,19 @@ messageFormat = "%(asctime)s - %(levelname)s - %(message)s"
 [cache]
 ttl = 3600
 maxEntries = 100
+
+[ui]
+hideSidebarNav = true
+hideShareButton = true
+hideManageAppButton = true
+hideMenuButton = true
+hideFooter = true
+hideTopBar = true
+hideToolbar = true
+hideHeader = true
+hideMainMenu = true
+hideDevMenu = true
+hideDeployButton = true
+
+[client]
+toolbarMode = "minimal"

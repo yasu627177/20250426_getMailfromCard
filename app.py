@@ -174,7 +174,7 @@ def main():
 
     # フッター
     st.markdown("---")
-    st.markdown("© 2024 名刺OCRアプリ")
+    st.markdown("© 2025 名刺OCRアプリ")
 
 if __name__ == "__main__":
     main() 

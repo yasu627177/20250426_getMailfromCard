@@ -12,18 +12,3 @@ timeout = 300
 [server]
 maxUploadSize = 200
 
-[ui]
-hideSidebarNav = true
-hideShareButton = true
-hideManageAppButton = true
-hideMenuButton = true
-hideFooter = true
-hideTopBar = true
-hideToolbar = true
-hideHeader = true
-hideMainMenu = true
-hideDevMenu = true
-hideDeployButton = true
-
-[client]
-toolbarMode = "minimal"
