@@ -27,7 +27,7 @@ SAVE_IMAGES = os.getenv('SAVE_IMAGES', 'false').lower() == 'true'
 # Streamlit UI設定
 st.set_page_config(
     page_title="名刺OCRアプリ",
-    page_icon="��",
+    page_icon="",
     layout="wide",
     initial_sidebar_state="auto",
     menu_items={
@@ -113,6 +113,15 @@ def process_image(image_path):
 def main():
     st.title("名刺OCRアプリ")
     st.subheader("名刺画像から情報を抽出・整理・保存")
+    
+    # 使用方法の説明を追加
+    st.markdown("""
+    ### 使い方
+    1. 「Browse files」ボタンをクリックして、読み込みたい名刺の画像を選んでください
+    2. 「🔍 データ抽出」ボタンをクリックすると、名刺の情報が自動的に抽出されます
+    3. 抽出された情報は画面に表示され、必要に応じてCSVファイルとして保存できます。
+      エクセルやスプレッドシートで開いてご利用ください。
+    """)
     
     # セッション状態の初期化
     if 'df' not in st.session_state:
